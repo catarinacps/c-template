@@ -1,0 +1,116 @@
+#+title: Henrique's useful C project template
+#+author: Henrique Silva
+#+email: hcpsilva@inf.ufrgs.br
+#+infojs_opt:
+#+property: cache yes
+
+Hello friend, and welcome to my C project template. It's like the C++ one, but
+in C! Who would've guessed, right?
+
+I've created this repo mainly to keep my awesome =Makefile= somewhere when I
+finally put the C++ version of my template thingy on CMake. So, enjoy.
+
+** Table of contents                                                 :TOC_3:
+  - [[#project-structure][Project structure]]
+  - [[#build][Build]]
+  - [[#dependency-management][Dependency management]]
+  - [[#contact][Contact]]
+
+** Project structure
+
+I've structured the template according to the following directories:
+
+- src/ :: The sources directory. Here lies all ~.c~ files, organized inside this
+          folder in sub-folders if the source-code belongs to a module or
+          namespace. If the file rests in the root of this directory its
+          considered a ~main~ file, which will be compiled as one of the target
+          executables.
+
+- include/ :: The headers directory. If the project is following an object
+              oriented approach, it will very closely resemble the ~src~
+              directory, organized in sub-directories to each module.
+
+- bin/ :: The ~.o~ directory. Here will be dumped all compiled objects.
+
+- build/ :: The executables directory. Here is the final resting place of the
+            project targets.
+
+- lib/ :: The ~.a~ directory. Dump here any static library you may be using.
+
+- scripts/ :: The ~.sh~ directory. Any script that needs to be used during the
+              compiling or dependency handling or whatever should stay here.
+
+** Build
+
+To build, just run this single line in the root of this repository:
+
+#+begin_src bash :tangle yes
+make
+#+end_src
+
+This is the case as the default target for my =Makefile= is the =all= rule.
+
+Also, here's an example of all the rules you can target (and, therefore, call my
+Makefile with):
+
+#+begin_src makefile
+.DEFAULT_GOAL = all
+
+all: deps $(TARGET)
+
+deps:
+    @./scripts/build.sh '$(DEPS)'
+
+clean:
+    rm -f $(OBJ_DIR)/*.o $(INC_DIR)/*~ $(TARGET) *~ *.o
+
+redo: clean all
+#+end_src
+
+** Dependency management
+
+I currently handle this stuff inserting manually into the ~Makefile~ a line
+defining URLs to the headers (yes, headers! I don't know how to support any
+bigger-than-an-one-file dependency), which then gets evaluated by the
+~scripts/build.sh~ script, that curls them and adds them to the ~include~
+folder.
+
+Here is the script by the way:
+
+#+begin_src shell
+cd include
+
+for par in "$@"; do
+    dep=($par)
+
+    name=${dep[0]}
+    dir="$name"
+    target=("${dep[@]:1}")
+
+    if [ ! -d $dir ]; then
+        echo "=> Dependency '$name' not found!"
+        mkdir $dir
+        cd $dir
+
+        for url in "${target[@]}"; do
+            echo "==> Downloading $(basename $url)..."
+            curl -O -L $url
+            echo
+        done
+
+        echo "=> Finished downloading '$name'!"
+        echo
+        cd ..
+    fi
+done
+
+cd ..
+#+end_src
+
+** Contact
+
+You can contact me at:
+
+#+begin_example
+hcpsilva@inf.ufrgs.br
+#+end_example
