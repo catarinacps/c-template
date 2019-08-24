@@ -47,10 +47,13 @@ OPT := $(if $(DFLAG),-O0,-O3)
 LIB := -L$(LIB_DIR)
 INC := -I$(INC_DIR)
 
-# Put here any dependencies you wish to include in the project, according to the
-# following format:
-# "<name> <URL> [<URL> ...]" "<name> <URL> [<URL> ...]" ...
+#	Put here any dependencies you wish to include in the project, according to the
+#	following format:
+#	"<name> <URL> [<URL> ...]" "<name> <URL> [<URL> ...]" ...
 DEPS :=
+
+#	To use all cores available in the CPU
+MAKEFLAGS += -j$(shell grep -c 'processor' /proc/cpuinfo)
 
 ################################################################################
 #	Files:
