@@ -20,15 +20,14 @@ finally put the C++ version of my template thingy on CMake. So, enjoy.
 
 I've structured the template according to the following directories:
 
-- src/ :: The sources directory. Here lies all ~.c~ files, organized inside this
-          folder in sub-folders if the source-code belongs to a module or
-          namespace. If the file rests in the root of this directory its
-          considered a ~main~ file, which will be compiled as one of the target
-          executables.
+- src/ :: The sources directory. Here lies all ~.c~ files and its private
+          headers, organized inside this folder in sub-folders if the
+          source-code belongs to a module or namespace. If the file rests in the
+          root of this directory its considered a ~main~ file, which will be
+          compiled as one of the target executables.
 
-- include/ :: The headers directory. If the project is following an object
-              oriented approach, it will very closely resemble the ~src~
-              directory, organized in sub-directories to each module.
+- include/ :: The public headers directory. This is for later external project
+              use, as shown by the folder with the same name as the project.
 
 - bin/ :: The ~.o~ directory. Here will be dumped all compiled objects.
 
@@ -57,9 +56,6 @@ Makefile with):
 .DEFAULT_GOAL = all
 
 all: deps $(TARGET)
-
-deps:
-    @./scripts/build.sh '$(DEPS)'
 
 clean:
     rm -f $(OBJ_DIR)/*.o $(INC_DIR)/*~ $(TARGET) *~ *.o

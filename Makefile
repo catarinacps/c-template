@@ -3,26 +3,27 @@
 #	c-template's project Makefile.
 #
 #	Utilization example:
-#		make [<target>] [DFLAG=true]
+#		make <TARGET> ["DFLAG=true"]
 #
-#	@param target
+#	@param TARGET
 #		Can be any of the following:
-#		all - compiles.
-#		clean - cleans up all binaries generated during compilation.
-#		redo - cleans up and then compiles.
-#		print-<var> - prints the content of the Makefile variable
-#                             (example: make print-OBJ).
+#		all - builds the project
+#		clean - cleans up all binaries generated during compilation
+#		redo - cleans up and then builds
 #
 #	@param "DFLAG=true"
-#		When present, the compilation will happen in debug mode.
+#		When present, the build will happen in debug mode.
 #
-#	Make's default action is "all", when no parameters are provided.
+#	@author
+#		@hcpsilva - Henrique Silva
+#
+#	Make's default action is "all" when no parameters are provided.
 
 
 ################################################################################
 #	Definitions:
 
-#	-- Project's directories
+#	- Project's directories:
 INC_DIR := include
 OBJ_DIR := bin
 OUT_DIR := build
@@ -31,7 +32,7 @@ LIB_DIR := lib
 
 DFLAG :=
 
-#	-- Compilation flags
+#	- Compilation flags:
 #	Compiler and language version
 CC := gcc -std=c17
 #	If DFLAG is defined, we'll turn on the debug flag and attach address
@@ -58,27 +59,27 @@ MAKEFLAGS += -j$(shell grep -c 'processor' /proc/cpuinfo)
 ################################################################################
 #	Files:
 
-#	-- Main source files
+#	- Main source files:
 #	Presumes that all "main" source files are in the root of SRC_DIR
 MAIN := $(wildcard $(SRC_DIR)/*.c)
 
-#	-- Path to all final binaries
+#	- Path to all final binaries:
 TARGET := $(patsubst %.c, $(OUT_DIR)/%, $(notdir $(MAIN)))
 
-#	-- Other source files
+#	- Other source files:
 SRC := $(filter-out $(MAIN), $(shell find $(SRC_DIR) -name '*.c'))
 
-#	-- Objects to be created
+#	- Objects to be created:
 OBJ := $(patsubst %.c, $(OBJ_DIR)/%.o, $(notdir $(SRC)))
 
 ################################################################################
 #	Rules:
 
-#	-- Executables
+#	- Executables:
 $(TARGET): $(OUT_DIR)/%: $(SRC_DIR)/%.c $(OBJ)
 	$(CC) -o $@ $^ $(INC) $(LIB) $(DEBUG) $(OPT)
 
-#	-- Objects
+#	- Objects:
 $(OBJ_DIR)/%.o:
 	$(CC) -c -o $@ $(filter %/$*.c, $(SRC)) $(INC) $(CFLAGS) $(DEBUG) $(OPT)
 
@@ -89,16 +90,20 @@ $(OBJ_DIR)/%.o:
 
 all: deps $(TARGET)
 
-deps:
-	@./scripts/build.sh '$(DEPS)'
-
 clean:
 	rm -f $(OBJ_DIR)/*.o $(INC_DIR)/*~ $(TARGET) *~ *.o
 
 redo: clean all
 
+################################################################################
+#	Debugging and etc.:
+
 #	Debug of the Make variables
 print-%:
 	@echo $* = $($*)
+
+#	Dependency fetching
+deps:
+	@./scripts/build.sh '$(DEPS)'
 
 .PHONY: all clean redo print-%
