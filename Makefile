@@ -3,7 +3,7 @@
 #	c-template's project Makefile.
 #
 #	Utilization example:
-#		make <TARGET> ["DFLAG=true"]
+#		make <TARGET> ["DEBUG=true"]
 #
 #	@param TARGET
 #		Can be any of the following:
@@ -11,7 +11,7 @@
 #		clean - cleans up all binaries generated during compilation
 #		redo - cleans up and then builds
 #
-#	@param "DFLAG=true"
+#	@param "DEBUG=true"
 #		When present, the build will happen in debug mode.
 #
 #	@author
@@ -30,21 +30,21 @@ OUT_DIR := build
 SRC_DIR := src
 LIB_DIR := lib
 
-DFLAG :=
+DEBUG :=
 
 #	- Compilation flags:
 #	Compiler and language version
 CC := gcc -std=c17
-#	If DFLAG is defined, we'll turn on the debug flag and attach address
+#	If DEBUG is defined, we'll turn on the debug flag and attach address
 #	sanitizer on the executables.
-DEBUG := $(if $(DFLAG),-g -fsanitize=address)
+DEBUGF := $(if $(DEBUG),-g -fsanitize=address)
 CFLAGS :=\
 	-Wall \
 	-Wextra \
 	-Wpedantic\
 	-Wshadow \
 	-Wunreachable-code
-OPT := $(if $(DFLAG),-O0,-O3)
+OPT := $(if $(DEBUG),-O0,-O3)
 LIB := -L$(LIB_DIR)
 INC := -I$(INC_DIR)
 
@@ -77,11 +77,11 @@ OBJ := $(patsubst %.c, $(OBJ_DIR)/%.o, $(notdir $(SRC)))
 
 #	- Executables:
 $(TARGET): $(OUT_DIR)/%: $(SRC_DIR)/%.c $(OBJ)
-	$(CC) -o $@ $^ $(INC) $(LIB) $(DEBUG) $(OPT)
+	$(CC) -o $@ $^ $(INC) $(LIB) $(DEBUGF) $(OPT)
 
 #	- Objects:
 $(OBJ_DIR)/%.o:
-	$(CC) -c -o $@ $(filter %/$*.c, $(SRC)) $(INC) $(CFLAGS) $(DEBUG) $(OPT)
+	$(CC) -c -o $@ $(filter %/$*.c, $(SRC)) $(INC) $(CFLAGS) $(DEBUGF) $(OPT)
 
 ################################################################################
 #	Targets:
