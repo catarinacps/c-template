@@ -7,9 +7,10 @@
 #
 #	@param TARGET
 #		Can be any of the following:
-#		all - builds the project
+#		all - builds the project (DEFAULT TARGET)
 #		clean - cleans up all binaries generated during compilation
 #		redo - cleans up and then builds
+#		help - shows the utilization example
 #
 #	@param "DEBUG=true"
 #		When present, the build will happen in debug mode.
@@ -95,6 +96,22 @@ clean:
 
 redo: clean all
 
+help:
+	@echo "c-template's project Makefile."
+	@echo
+	@echo "Utilization example:"
+	@echo " make <TARGET> ['DEBUG=true']"
+	@echo
+	@echo "@param TARGET"
+	@echo " Can be any of the following:"
+	@echo " all - builds the project (DEFAULT TARGET)"
+	@echo " clean - cleans up all binaries generated during compilation"
+	@echo " redo - cleans up and then builds"
+	@echo " help - shows the utilization example"
+	@echo
+	@echo "@param 'DEBUG=true'"
+	@echo " When present, the build will happen in debug mode."
+
 ################################################################################
 #	Debugging and etc.:
 
@@ -106,4 +123,4 @@ print-%:
 deps:
 	@./scripts/build.sh '$(DEPS)'
 
-.PHONY: all clean redo print-%
+.PHONY: all clean redo help print-% deps
