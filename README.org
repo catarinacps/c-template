@@ -49,6 +49,27 @@ make
 
 This is the case as the default target for my =Makefile= is the =all= rule.
 
+To use all cores in your machine, just add the following flag:
+
+#+begin_src bash :tangle yes
+make -j<NUMBER_OF_CORES>
+
+# like
+make -j4
+#+end_src
+
+In order to find out how many cores you have, run any of the following command
+in your shell:
+
+#+begin_src bash :tangle yes
+# either
+nproc
+# or
+lscpu
+# or
+cat /proc/cpuinfo
+#+end_src
+
 Also, here's an example of all the rules you can target (and, therefore, call my
 Makefile with):
 

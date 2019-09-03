@@ -54,9 +54,6 @@ INC := -I$(INC_DIR)
 #	"<name> <URL> [<URL> ...]" "<name> <URL> [<URL> ...]" ...
 DEPS :=
 
-#	To use all cores available in the CPU
-MAKEFLAGS += -j$(shell grep -c 'processor' /proc/cpuinfo)
-
 ################################################################################
 #	Files:
 
