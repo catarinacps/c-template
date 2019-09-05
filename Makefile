@@ -45,7 +45,7 @@ CFLAGS :=\
 	-Wpedantic\
 	-Wshadow \
 	-Wunreachable-code
-OPT := $(if $(DEBUG),-O0,-O3)
+OPT := $(if $(DEBUG),-O0,-O3 -march=native)
 LIB := -L$(LIB_DIR)
 INC := -I$(INC_DIR)
 
