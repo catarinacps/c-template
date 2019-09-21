@@ -47,7 +47,7 @@ CFLAGS :=\
 	-Wunreachable-code
 OPT := $(if $(DEBUG),-O0,-O3 -march=native)
 LIB := -L$(LIB_DIR)
-INC := -I$(INC_DIR)
+INC := -I$(INC_DIR) -I$(SRC_DIR)
 
 #	Put here any dependencies you wish to include in the project, according to the
 #	following format:
