@@ -33,6 +33,10 @@ LIB_DIR := lib
 
 DEBUG :=
 
+#	Add the extra paths through these variables in the command line
+LIB_EXTRA :=
+INC_EXTRA :=
+
 #	- Compilation flags:
 #	Compiler and language version
 CC := gcc -std=c17
@@ -42,12 +46,15 @@ DEBUGF := $(if $(DEBUG),-g -fsanitize=address)
 CFLAGS :=\
 	-Wall \
 	-Wextra \
-	-Wpedantic\
+	-Wpedantic \
 	-Wshadow \
 	-Wunreachable-code
+LFLAGS :=\
+	-shared \
+	-fPIC
 OPT := $(if $(DEBUG),-O0,-O3 -march=native)
-LIB := -L$(LIB_DIR)
-INC := -I$(INC_DIR) -I$(SRC_DIR)
+LIB := -L$(LIB_DIR) $(LIB_EXTRA)
+INC := -I$(INC_DIR) -I$(SRC_DIR) $(INC_EXTRA)
 
 #	Put here any dependencies you wish to include in the project, according to the
 #	following format:
@@ -59,10 +66,16 @@ DEPS :=
 
 #	- Main source files:
 #	Presumes that all "main" source files are in the root of SRC_DIR
-MAIN := $(wildcard $(SRC_DIR)/*.c)
+MAIN := $(notdir $(wildcard $(SRC_DIR)/*.c))
 
 #	- Path to all final binaries:
-TARGET := $(patsubst %.c, $(OUT_DIR)/%, $(notdir $(MAIN)))
+TARGET_EXE := $(patsubst %.c, $(OUT_DIR)/%, $(MAIN))
+
+#	- Library files:
+LIBS := $(shell basename $(wildcard $(LIB_DIR)/*/))
+
+#	- Path to all final libraries:
+TARGET_LIB := $(patsubst %, $(LIB_DIR)/lib%.so, $(LIBS))
 
 #	- Other source files:
 SRC := $(filter-out $(MAIN), $(shell find $(SRC_DIR) -name '*.c'))
@@ -74,22 +87,26 @@ OBJ := $(patsubst %.c, $(OBJ_DIR)/%.o, $(notdir $(SRC)))
 #	Rules:
 
 #	- Executables:
-$(TARGET): $(OUT_DIR)/%: $(SRC_DIR)/%.c $(OBJ)
+$(TARGET_EXE): $(OUT_DIR)/%: $(SRC_DIR)/%.c $(OBJ)
 	$(CC) -o $@ $^ $(INC) $(LIB) $(DEBUGF) $(OPT)
 
 #	- Objects:
 $(OBJ_DIR)/%.o:
 	$(CC) -c -o $@ $(filter %/$*.c, $(SRC)) $(INC) $(CFLAGS) $(DEBUGF) $(OPT)
 
+#	- Shared Libraries:
+$(TARGET_LIB): $(LIB_DIR)/lib%.so:
+	$(CC) -o $@ $(wildcard $(LIB_DIR)/$*/*.c) $(LFLAGS) $(FUN) $(INC) $(CFLAGS) $(OPT)
+
 ################################################################################
 #	Targets:
 
 .DEFAULT_GOAL = all
 
-all: deps $(TARGET)
+all: deps $(TARGET_LIB) $(TARGET_EXE)
 
 clean:
-	rm -f $(OBJ_DIR)/*.o $(INC_DIR)/*~ $(TARGET) *~ *.o
+	rm -f $(OBJ_DIR)/*.o $(INC_DIR)/*~ $(TARGET_EXE) $(TARGET_LIB) *~ *.o
 
 redo: clean all
 
