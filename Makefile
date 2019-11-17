@@ -49,7 +49,7 @@ CFLAGS :=\
 	-Wpedantic \
 	-Wshadow \
 	-Wunreachable-code
-LFLAGS :=\
+LDFLAGS :=\
 	-shared \
 	-fPIC
 OPT := $(if $(DEBUG),-O0,-O3 -march=native)
@@ -66,10 +66,10 @@ DEPS :=
 
 #	- Main source files:
 #	Presumes that all "main" source files are in the root of SRC_DIR
-MAIN := $(notdir $(wildcard $(SRC_DIR)/*.c))
+MAIN := $(wildcard $(SRC_DIR)/*.c)
 
 #	- Path to all final binaries:
-TARGET_EXE := $(patsubst %.c, $(OUT_DIR)/%, $(MAIN))
+TARGET_EXE := $(patsubst %.c, $(OUT_DIR)/%, $(notdir $(MAIN)))
 
 #	- Library files:
 LIBS := $(shell basename $(wildcard $(LIB_DIR)/*/))
@@ -96,7 +96,7 @@ $(OBJ_DIR)/%.o:
 
 #	- Shared Libraries:
 $(TARGET_LIB): $(LIB_DIR)/lib%.so:
-	$(CC) -o $@ $(wildcard $(LIB_DIR)/$*/*.c) $(LFLAGS) $(FUN) $(INC) $(CFLAGS) $(OPT)
+	$(CC) -o $@ $(wildcard $(LIB_DIR)/$*/*.c) $(LDFLAGS) $(FUN) $(INC) $(CFLAGS) $(OPT)
 
 ################################################################################
 #	Targets:
