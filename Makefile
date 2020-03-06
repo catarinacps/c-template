@@ -71,32 +71,44 @@ MAIN := $(wildcard $(SRC_DIR)/*.c)
 #	- Path to all final binaries:
 TARGET_EXE := $(patsubst %.c, $(OUT_DIR)/%, $(notdir $(MAIN)))
 
-#	- Library files:
-LIBS := $(shell basename $(wildcard $(LIB_DIR)/*/))
+#	- Library directories:
+LIBS := $(shell find $(LIB_DIR) -maxdepth 1 -mindepth 1 -type d)
 
 #	- Path to all final libraries:
-TARGET_LIB := $(patsubst %, $(LIB_DIR)/lib%.so, $(LIBS))
+TARGET_LIB := $(patsubst %, $(LIB_DIR)/lib%.so, $(basename $(LIBS)))
 
 #	- Other source files:
-SRC := $(filter-out $(MAIN), $(shell find $(SRC_DIR) -name '*.c'))
+EXE_SRC := $(shell find $(SRC_DIR) -name '*.c' | cut -d'/' -f2-)
 
 #	- Objects to be created:
-OBJ := $(patsubst %.c, $(OBJ_DIR)/%.o, $(notdir $(SRC)))
+EXE_OBJ := $(patsubst %.c, $(OBJ_DIR)/%.o, $(EXE_SRC))
+
+#	- Library source files:
+LIB_SRC := $(shell find $(LIB_DIR) -mindepth 2 -type f -name '*.c' | cut -d'/' -f2-)
+
+#	- Library objects:
+LIB_OBJ := $(patsubst %.c, $(OBJ_DIR)/%.o, $(LIB_SRC))
 
 ################################################################################
 #	Rules:
 
 #	- Executables:
-$(TARGET_EXE): $(OUT_DIR)/%: $(SRC_DIR)/%.c $(OBJ)
+$(TARGET_EXE): $(OUT_DIR)/%: $(SRC_DIR)/%.c $(EXE_OBJ)
 	$(CC) -o $@ $^ $(INC) $(LIB) $(DEBUGF) $(OPT)
 
 #	- Objects:
-$(OBJ_DIR)/%.o:
-	$(CC) -c -o $@ $(filter %/$*.c, $(SRC)) $(INC) $(CFLAGS) $(DEBUGF) $(OPT)
+$(EXEC_OBJ): $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CC) -c -o $@ $< $(INC) $(CFLAGS) $(DEBUGF) $(OPT)
 
 #	- Shared Libraries:
-$(TARGET_LIB): $(LIB_DIR)/lib%.so:
-	$(CC) -o $@ $(wildcard $(LIB_DIR)/$*/*.c) $(LDFLAGS) $(FUN) $(INC) $(CFLAGS) $(OPT)
+$(TARGET_LIB): $(LIB_DIR)/lib%.so: $(LIB_OBJ)
+	$(CC) -o $@ $^ $(LDFLAGS) $(FUN) $(INC) $(CFLAGS) $(OPT)
+
+#	- Library objects
+$(LIB_OBJ): $(OBJ_DIR)/%.o: $(LIB_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CC) -c -o $@ $< $(INC) $(CFLAGS) $(DEBUGF) $(OPT)
 
 ################################################################################
 #	Targets:
@@ -106,7 +118,7 @@ $(TARGET_LIB): $(LIB_DIR)/lib%.so:
 all: deps $(TARGET_LIB) $(TARGET_EXE)
 
 clean:
-	rm -f $(OBJ_DIR)/*.o $(INC_DIR)/*~ $(TARGET_EXE) $(TARGET_LIB) *~ *.o
+	rm -rf $(OBJ_DIR)/* $(INC_DIR)/*~ $(TARGET_EXE) $(TARGET_LIB) *~ *.o
 
 redo: clean all
 
